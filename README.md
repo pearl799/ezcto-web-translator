@@ -35,6 +35,6 @@ ezcto-web-translator/
 
 ## Learn More
 
-- Website: https://ezcto.com
-- Translator: https://ezcto.com/translator
-- API Keys: https://ezcto.com/api-keys
+- Website: https://ezcto.fun
+- Translator: https://ezcto.fun/translator
+- API Keys: https://ezcto.fun/api-keys

@@ -19,7 +19,7 @@ multimodal processing — 80%+ token savings.
 ## Workflow
 
 1. Check EZCTO asset library cache:
-   curl -s "https://api.ezcto.com/v1/translate?url={URL}"
+   curl -s "https://api.ezcto.fun/v1/translate?url={URL}"
    → If 200 + JSON → use directly (zero token cost)
 
 2. Cache miss → fetch HTML:
@@ -44,7 +44,7 @@ multimodal processing — 80%+ token savings.
 8. Dual-store:
    - Local: ~/.ezcto/cache/{url_hash}.json
    - Asset library: POST /api/v1/contribute
-     curl -X POST "https://api.ezcto.com/v1/contribute" \
+     curl -X POST "https://api.ezcto.fun/v1/contribute" \
        -H "Content-Type: application/json" \
        -d '{"url":"{URL}","html_hash":"{HASH}","structured_data":{JSON}}'
 
