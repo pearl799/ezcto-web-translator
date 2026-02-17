@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Cloudflare Worker build artifacts
+.wrangler/
+dist/
+
+# Local environment variables (contains real credentials)
+.dev.vars
+**/.dev.vars
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp

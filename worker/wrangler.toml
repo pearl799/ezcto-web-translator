@@ -1,0 +1,37 @@
+name = "ezcto-api-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+BACKEND_URL = "https://ezcto.fun"
+CUSTOM_DOMAIN = "ezcto.fun"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "ezcto-sites"
+# 本地开发时使用本地模拟 R2
+preview_bucket_name = "ezcto-sites-dev"
+
+[[kv_namespaces]]
+binding = "SLUG_KV"
+# 替换为你自己的 KV Namespace ID
+# 创建方法: wrangler kv namespace create SLUG_KV
+id = "your-kv-namespace-id"
+preview_id = "your-kv-namespace-preview-id"
+
+[[routes]]
+pattern = "api.ezcto.fun/*"
+zone_name = "ezcto.fun"
+
+# 子域名 Content Negotiation 路由
+[[routes]]
+pattern = "*.ezcto.fun/*"
+zone_name = "ezcto.fun"
+
+[dev]
+port = 8787
+local_protocol = "http"
+
+# 本地测试用，不提交到 git
+# 在 .dev.vars 中覆盖这些值
