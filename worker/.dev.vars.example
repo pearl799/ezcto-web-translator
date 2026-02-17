@@ -1,8 +1,0 @@
-# Copy this file to .dev.vars for local development
-# .dev.vars is gitignored and should NOT be committed
-
-# EZCTO 2.0 backend URL (local dev)
-BACKEND_URL=http://localhost:3000
-
-# Root domain
-CUSTOM_DOMAIN=ezcto.fun

@@ -1,63 +1,65 @@
-# EZCTO — AI Web Translator & API Gateway
+# EZCTO Web Translator — OpenClaw Skill
 
-> Translate any website into AI-friendly structured JSON. Built for OpenClaw agents and the EZCTO ecosystem.
+> Translate any website into AI-friendly structured JSON. Built for [OpenClaw](https://openclaw.ai) agents.
+> No screenshots. No multimodal. **80%+ token savings.**
 
-## What's in this repo
+## How it works
 
-```
-ezcto-monorepo/
-├── skill/      ← OpenClaw Skill: web page translator for AI agents
-└── worker/     ← Cloudflare Worker: translation asset library API + content negotiation
-```
-
-### `skill/` — OpenClaw Web Translator
-
-An AI Agent skill that converts any website HTML into structured JSON — without screenshots or multimodal processing. **80%+ token savings**.
-
-- ✅ Cache-first: checks EZCTO asset library before translating (0 tokens if cached)
-- ✅ Zero-token site detection: auto-detects crypto/ecommerce/restaurant sites
-- ✅ Community-powered: your translations are shared back to the library
-- ✅ OpenClaw-native: triggers, tool dependencies, agent suggestions all built-in
-
-→ [Full docs](./skill/README.md)
-
-### `worker/` — Cloudflare Worker API Gateway
-
-The Worker deployed at `api.ezcto.fun` that powers:
-- **Translation asset library**: community cache of web translations
-- **Content negotiation**: serves AI-friendly Markdown/JSON for EZCTO-generated sites
-
-→ [Full docs](./worker/README.md)
+1. **Check cache first** — queries `api.ezcto.fun` (community asset library, already deployed)
+2. **Cache hit** → returns structured JSON instantly, **0 tokens**
+3. **Cache miss** → translates locally with your LLM, contributes result back to the library
+4. **Everyone benefits** — every contribution makes the cache more complete over time
 
 ## Quick Start
 
-### Use the Skill (OpenClaw)
-
 ```bash
-# Copy the skill into your OpenClaw skills directory
-cp -r skill ~/.openclaw/skills/ezcto-web-translator
-
-# In OpenClaw chat:
-# "Translate https://pump.fun"
+# Copy into your OpenClaw skills directory
+cp -r skill/ ~/.openclaw/skills/ezcto-web-translator
 ```
 
-### Deploy the Worker (Cloudflare)
+Then in OpenClaw chat:
 
-```bash
-cd worker
-npm install
-# Configure wrangler.toml with your KV namespace ID
-npm run dev       # Local test
-npm run deploy    # Deploy to Cloudflare
+```
+Translate https://pump.fun
 ```
 
-## How the community library works
+OpenClaw will automatically invoke this skill when you ask it to translate or understand a webpage.
 
-1. You translate a new site → result is automatically contributed to `api.ezcto.fun`
-2. Next time anyone needs that site → they get it instantly (0 tokens)
-3. Over time, the library grows → cache hit rate increases → cost approaches zero
+## Public API (no setup required)
 
-This is the **Web Translation Commons** — every contribution makes AI web access faster and cheaper for everyone.
+The translation asset library is hosted at **`api.ezcto.fun`** — a public, always-on endpoint operated by the EZCTO team. Skill users do not need to deploy or configure anything.
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/v1/translate?url=` | GET | None | Query community cache (free, unlimited) |
+| `/v1/contribute` | POST | None | Contribute a translation (free) |
+| `/v1/translate-server` | POST | API Key | Server-side translation (paid) |
+| `/v1/refresh` | POST | API Key | Force refresh a cached page (paid, 3x quota) |
+
+Get an API key at [ezcto.fun/api-keys](https://ezcto.fun/api-keys).
+
+## File Structure
+
+```
+skill/
+├── SKILL.md                          ← OpenClaw reads this (core workflow)
+├── QUICKSTART.md                     ← 5-minute setup guide
+├── references/
+│   ├── translate-prompt.md           ← LLM translation prompt
+│   ├── output-schema.md              ← JSON output schema
+│   ├── site-type-detection.md        ← Zero-token site type detection
+│   ├── openclaw-integration.md       ← OpenClaw integration details
+│   └── extensions/
+│       ├── crypto-fields.md          ← Crypto/Web3 extraction
+│       ├── ecommerce-fields.md       ← E-commerce extraction
+│       └── restaurant-fields.md      ← Restaurant extraction
+└── examples/
+    └── openclaw-output-example.json  ← Full output example
+```
+
+## Community Library
+
+Every translation you make is automatically contributed back to `api.ezcto.fun`. The library grows with every user — over time, most popular sites are cached and cost **$0 to access**.
 
 ## License
 
