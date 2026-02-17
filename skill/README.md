@@ -1,6 +1,6 @@
-# EZCTO Web Translator — OpenClaw Edition
+# EZCTO Smart Web Reader — OpenClaw Edition
 
-> Translate any website into structured JSON for OpenClaw agents. Zero screenshots, 80%+ token savings.
+> The smart way for OpenClaw agents to access any URL — cache-first, structured JSON, 80%+ token savings vs screenshots.
 
 [![OpenClaw Compatible](https://img.shields.io/badge/OpenClaw-Compatible-blue)](https://openclaw.ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -8,51 +8,51 @@
 
 ---
 
-## 🦞 Why This Skill?
+## Why This Skill?
 
-**Problem:** OpenClaw agents struggle with web content. Options are:
+**Problem:** Every time an OpenClaw agent accesses a URL, it faces three bad options:
 1. **Screenshots** → Expensive (Claude multimodal = 2000+ tokens per image)
 2. **Raw HTML** → Noisy and hard to parse (ads, scripts, boilerplate)
-3. **Web scraping** → Fragile and site-specific
+3. **web_fetch** → Returns unstructured text, agent still has to spend tokens parsing it
 
-**Solution:** This skill translates HTML into clean, structured JSON that OpenClaw can understand directly.
+**Solution:** This skill is a transparent replacement for `web_fetch`. It intercepts URL access and returns clean, structured JSON — letting the agent immediately understand page content without token-heavy parsing.
 
 ### Before vs After
 
-**Before (screenshot approach):**
+**Before (raw web_fetch or screenshot):**
 ```
 User: "What's on pump.fun?"
-OpenClaw: *takes screenshot* → sends to Claude Vision
+OpenClaw: *fetches raw HTML* → sends to Claude for parsing
 Cost: ~3000 tokens | Time: 8 seconds
 ```
 
-**After (this skill):**
+**After (this skill — transparent, automatic):**
 ```
 User: "What's on pump.fun?"
-OpenClaw: *uses ezcto-web-translator-openclaw*
+OpenClaw: *checks EZCTO cache, returns structured JSON*
 Cost: 0 tokens (cache hit) | Time: 1 second
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
-1. **Clone this skill into your OpenClaw workspace:**
+1. **Clone into your OpenClaw skills directory:**
    ```bash
    cd ~/.openclaw/skills
-   git clone https://github.com/ezcto/web-translator-openclaw ezcto-web-translator-openclaw
+   git clone https://github.com/pearl799/ezcto-web-translator ezcto-smart-web-reader
    ```
 
-2. **Or manually copy:**
+2. **Or copy manually:**
    ```bash
-   cp -r ezcto-web-translator-openclaw ~/.openclaw/skills/
+   cp -r ezcto-smart-web-reader ~/.openclaw/skills/
    ```
 
 3. **Verify installation:**
    ```bash
-   openclaw skills list | grep ezcto-web-translator
+   openclaw skills list | grep ezcto-smart-web-reader
    ```
 
 ### First Use
@@ -61,66 +61,69 @@ Cost: 0 tokens (cache hit) | Time: 1 second
 # Start OpenClaw
 openclaw
 
-# In the chat
-You: Translate https://ezcto.fun
+# Just mention any URL — the skill fires automatically
+You: What's on pump.fun?
 
-# OpenClaw will automatically invoke this skill
-OpenClaw: ✓ Translated ezcto.fun (cache hit, 0 tokens)
-         Site type: general
-         Primary action: Explore Translator
+# OpenClaw reads it without you asking
+OpenClaw: ✓ Read pump.fun (cache hit, 0 tokens, 1.2s)
+         Site type: crypto
+         Primary action: Start Trading
          Cached at: ~/.ezcto/cache/abc123.json
 ```
 
 ---
 
-## 📁 File Structure
+## File Structure
 
 ```
-ezcto-web-translator-openclaw/
+ezcto-smart-web-reader/
 ├── SKILL.md                          ← OpenClaw reads this for workflow
 ├── README.md                         ← You are here
 ├── references/
-│   ├── translate-prompt.md           ← Base LLM translation prompt
+│   ├── translate-prompt.md           ← LLM parsing prompt
 │   ├── output-schema.md              ← JSON output specification
 │   ├── site-type-detection.md        ← Zero-token site type detection
-│   ├── openclaw-integration.md       ← OpenClaw-specific integration guide
+│   ├── openclaw-integration.md       ← OpenClaw integration guide
 │   └── extensions/
 │       ├── crypto-fields.md          ← Crypto/Web3 enhanced extraction
 │       ├── ecommerce-fields.md       ← E-commerce enhanced extraction
 │       └── restaurant-fields.md      ← Restaurant enhanced extraction
 └── examples/
-    ├── crypto-example.json           ← Full example: crypto site
-    ├── ecommerce-example.json        ← Full example: e-commerce
-    └── openclaw-output-example.json  ← OpenClaw wrapper format
+    └── openclaw-output-example.json  ← Full output example
 ```
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
-### 1. Cache-First Strategy
-- Checks EZCTO asset library before translating → **0 tokens if cached**
+### 1. Transparent URL Interception
+- Fires automatically whenever agent needs to access a URL
+- No user action required — agent gets structured data, not raw HTML
+- Works for any URL: crypto, e-commerce, restaurants, SaaS, blogs, etc.
+
+### 2. Cache-First Strategy
+- Checks EZCTO public library first → **0 tokens if cached**
 - Local cache at `~/.ezcto/cache/` → Instant repeat access
 - Community contributions → Growing cache coverage
 
-### 2. Zero-Token Site Detection
+### 3. Zero-Token Site Detection
 - Auto-detects crypto/ecommerce/restaurant sites via text pattern matching
-- No LLM calls for detection → Pure regex/string matching
+- No LLM calls for detection — pure regex/string matching
 - Loads type-specific extraction rules automatically
 
-### 3. OpenClaw-Native Output
+### 4. OpenClaw-Native Output
 - JSON result wrapped with metadata for skill chaining
 - Markdown summary at `~/.ezcto/cache/{hash}.meta.md` for quick reference
 - Agent suggestions for next actions and skill combinations
 
-### 4. Smart Error Handling
-- Structured error codes: `fetch_failed`, `translation_failed`, `validation_failed`
+### 5. Smart Error Handling
+- Structured error codes: `fetch_failed`, `parse_failed`, `validation_failed`
 - Recovery suggestions for each error type
-- Never silently fails - always returns actionable feedback
+- Never silently fails — always returns actionable feedback
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables (Optional)
 
@@ -154,7 +157,7 @@ openclaw tools list | grep -E "web_fetch|exec|filesystem"
 
 ---
 
-## 📊 Cost Analysis
+## Cost Analysis
 
 | Scenario | Tokens | Time | API Calls | Cost |
 |----------|--------|------|-----------|------|
@@ -168,28 +171,28 @@ openclaw tools list | grep -E "web_fetch|exec|filesystem"
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Test Suite
 
 ```bash
 # Test 1: Cache hit (should be instant)
-openclaw chat "Translate https://ezcto.fun"
+openclaw chat "What's on ezcto.fun?"
 
 # Test 2: Crypto site detection
-openclaw chat "Translate https://pump.fun"
+openclaw chat "Check https://pump.fun"
 # Expected: site_type = ["crypto"], extracts contract addresses
 
 # Test 3: E-commerce site
-openclaw chat "What's on https://www.shopify.com"
+openclaw chat "What does shopify.com offer?"
 # Expected: site_type = ["ecommerce"], extracts products
 
 # Test 4: Error handling (invalid URL)
-openclaw chat "Translate https://this-does-not-exist-12345.com"
+openclaw chat "Look at https://this-does-not-exist-12345.com"
 # Expected: Returns structured error with code "fetch_failed"
 
 # Test 5: Large HTML (>500KB)
-openclaw chat "Translate https://en.wikipedia.org/wiki/Artificial_intelligence"
+openclaw chat "Read https://en.wikipedia.org/wiki/Artificial_intelligence"
 # Expected: Truncates to <body> only, still succeeds
 ```
 
@@ -199,7 +202,7 @@ openclaw chat "Translate https://en.wikipedia.org/wiki/Artificial_intelligence"
 # Check local cache
 ls -lh ~/.ezcto/cache/
 
-# Read a cached translation (JSON)
+# Read a cached result (JSON)
 cat ~/.ezcto/cache/*.json | jq .
 
 # Read Markdown summary
@@ -208,16 +211,14 @@ cat ~/.ezcto/cache/*.meta.md
 
 ---
 
-## 🔗 Skill Chaining (Advanced)
-
-OpenClaw can chain this skill with others for powerful workflows:
+## Skill Chaining (Advanced)
 
 ### Example 1: Price Tracking
 ```
 User: "Track price of this product: https://amazon.com/dp/B08N5WRWNW"
 
 OpenClaw workflow:
-1. ezcto-web-translator-openclaw → Extract product details
+1. ezcto-smart-web-reader → Extract product details
 2. price-tracker skill → Monitor price changes
 3. email-notifier skill → Alert on price drop
 ```
@@ -227,7 +228,7 @@ OpenClaw workflow:
 User: "Research this token: https://pump.fun/coin/abc123"
 
 OpenClaw workflow:
-1. ezcto-web-translator-openclaw → Extract contract, tokenomics
+1. ezcto-smart-web-reader → Extract contract, tokenomics
 2. blockchain-explorer skill → Check on-chain data
 3. sentiment-analyzer skill → Analyze social mentions
 4. markdown-report skill → Generate research report
@@ -238,31 +239,31 @@ OpenClaw workflow:
 User: "Compare these 3 e-commerce sites: [URLs]"
 
 OpenClaw workflow:
-1. ezcto-web-translator-openclaw (3x parallel) → Extract all products
+1. ezcto-smart-web-reader (3x parallel) → Extract all products
 2. product-comparison skill → Generate comparison table
 3. chart-generator skill → Visualize pricing
 ```
 
 ---
 
-## 🛡️ Security & Privacy
+## Security & Privacy
 
 ### What This Skill Does
-- ✅ Fetches publicly accessible web pages
-- ✅ Stores translations locally in `~/.ezcto/cache/`
-- ✅ Contributes **non-sensitive** data to EZCTO asset library
+- Fetches publicly accessible web pages
+- Stores parsed results locally in `~/.ezcto/cache/`
+- Contributes **non-sensitive** data to EZCTO asset library
 
 ### What This Skill Does NOT Do
-- ❌ Access password-protected sites (no auth bypass)
-- ❌ Store or transmit API keys, passwords, or PII
-- ❌ Execute JavaScript or interact with pages (read-only)
-- ❌ Modify or fabricate URLs in translation output
+- Access password-protected sites (no auth bypass)
+- Store or transmit API keys, passwords, or PII
+- Execute JavaScript or interact with pages (read-only)
+- Modify or fabricate URLs in output
 
 ### Data Sharing
 When you use this skill, **only these data points** are sent to EZCTO API:
-1. The URL you asked to translate
+1. The URL you asked to read
 2. SHA256 hash of the HTML content
-3. The structured JSON translation
+3. The structured JSON result
 
 **NOT shared:** Your IP, OpenClaw config, other browsing history.
 
@@ -273,62 +274,54 @@ export EZCTO_CONTRIBUTE=false
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Issue: "Tool 'exec' not enabled"
-**Solution:**
 ```bash
-# Edit OpenClaw config
 nano ~/.openclaw/config.yaml
-
-# Enable exec tool
-tools:
-  exec: enabled
+# tools:
+#   exec: enabled
 ```
 
 ### Issue: "Cache directory not writable"
-**Solution:**
 ```bash
 mkdir -p ~/.ezcto/cache
 chmod 755 ~/.ezcto/cache
 ```
 
-### Issue: "Translation validation failed"
+### Issue: "Parse validation failed"
 **Cause:** LLM returned malformed JSON (rare with Claude)
-**Solution:**
 - Check `~/.openclaw/logs/` for the raw LLM output
 - Try again (may be transient LLM issue)
 - Report to EZCTO if persistent
 
 ### Issue: "EZCTO API timeout"
-**Solution:**
 ```bash
 # Test API connectivity
 curl -s "https://api.ezcto.fun/v1/translate?url=https://ezcto.fun"
-
-# If slow/timeout, skill will automatically fall back to local translation
+# If slow/timeout, skill automatically falls back to local parsing
 ```
 
 ---
 
-## 📚 Learn More
+## Learn More
 
 - **EZCTO Website:** https://ezcto.fun
 - **API Documentation:** https://ezcto.fun/api-docs
 - **OpenClaw Docs:** https://docs.openclaw.ai
-- **Report Issues:** https://github.com/ezcto/web-translator-openclaw/issues
+- **Report Issues:** https://github.com/pearl799/ezcto-web-translator/issues
 - **Community Discord:** https://discord.gg/ezcto
 
 ---
 
-## 📜 License
+## License
 
-MIT License - see LICENSE file for details.
+MIT License — see LICENSE file for details.
 
 ---
 
-## 🙏 Credits
+## Credits
 
 - Built for [OpenClaw](https://openclaw.ai) by [EZCTO Team](https://ezcto.fun)
-- Powered by Claude (Anthropic) for LLM translation
+- Powered by Claude (Anthropic) for LLM-based HTML parsing
 - Community contributions welcome!

@@ -1,6 +1,6 @@
 # OpenClaw Integration Guide
 
-This document explains how the EZCTO Web Translator integrates with OpenClaw's architecture and how to leverage OpenClaw-specific features.
+This document explains how the EZCTO Smart Web Reader integrates with OpenClaw's architecture and how to leverage OpenClaw-specific features.
 
 ---
 
@@ -25,8 +25,8 @@ This document explains how the EZCTO Web Translator integrates with OpenClaw's a
          │  Tools   │  │  Skills  │  │   LLM    │
          │          │  │          │  │ (Claude) │
          │ web_fetch│  │  ezcto-  │  │          │
-         │   exec   │  │   web-   │  │          │
-         │filesystem│  │translator│  │          │
+         │   exec   │  │ smart-   │  │          │
+         │filesystem│  │web-reader│  │          │
          └──────────┘  └──────────┘  └──────────┘
                              │
                              ▼
@@ -49,7 +49,7 @@ When OpenClaw starts, it scans for skills in:
 
 **Our skill location:**
 ```
-~/.openclaw/skills/ezcto-web-translator-openclaw/
+~/.openclaw/skills/ezcto-smart-web-reader/
 ├── SKILL.md          ← OpenClaw reads YAML frontmatter
 └── references/       ← Skill reads these at runtime
 ```
@@ -57,10 +57,11 @@ When OpenClaw starts, it scans for skills in:
 **How OpenClaw identifies our skill:**
 ```yaml
 # From SKILL.md frontmatter
-name: ezcto-web-translator-openclaw
+name: ezcto-smart-web-reader
 triggers:
-  - user asks to "translate a website"
-  - user provides a URL and wants structured content
+  - agent needs to read, access, or fetch a URL
+  - user provides a URL and wants to know what's on it
+  - user shares a URL without explicit instruction
 ```
 
 ---
@@ -73,16 +74,18 @@ When a user sends a message, OpenClaw:
 3. If matched, injects skill into system prompt
 
 **Example user messages that trigger this skill:**
-- "Translate https://example.com"
-- "What's on this page: https://..."
-- "Understand this website"
-- "Extract info from https://..."
+- "What's on pump.fun?"
+- "Check this page: https://..."
+- "Understand this website for me"
+- "Look at https://example.com"
+- "What does this company sell?" (with URL in context)
+- Any message where agent would otherwise call `web_fetch`
 
 **XML injection into system prompt:**
 ```xml
 <available_skills>
-  <skill name="ezcto-web-translator-openclaw">
-    <description>Translate any website into structured JSON</description>
+  <skill name="ezcto-smart-web-reader">
+    <description>Agent web access acceleration layer — reads any URL as structured JSON</description>
     <cost>0-2000 tokens</cost>
     <time>1-15 seconds</time>
   </skill>
@@ -107,7 +110,7 @@ requires_tools:
 
 **If any tool is missing:**
 ```
-OpenClaw: ⚠ Skill 'ezcto-web-translator-openclaw' requires 'exec' tool,
+OpenClaw: ⚠ Skill 'ezcto-smart-web-reader' requires 'exec' tool,
           but it's disabled. Enable it in ~/.openclaw/config.yaml?
 ```
 
@@ -117,8 +120,8 @@ OpenClaw: ⚠ Skill 'ezcto-web-translator-openclaw' requires 'exec' tool,
 
 ```mermaid
 sequenceDiagram
-    User->>OpenClaw: "Translate https://pump.fun"
-    OpenClaw->>OpenClaw: Match trigger "translate"
+    User->>OpenClaw: "What's on pump.fun?"
+    OpenClaw->>OpenClaw: Match trigger (URL access intent)
     OpenClaw->>OpenClaw: Verify tools (web_fetch, exec, filesystem)
     OpenClaw->>Skill: Execute SKILL.md workflow
     Skill->>EZCTO API: Check cache (curl)
@@ -129,10 +132,10 @@ sequenceDiagram
         Skill->>Tool(web_fetch): Fetch HTML
         Tool(web_fetch)-->>Skill: HTML content
         Skill->>Skill: Detect site type (0 tokens)
-        Skill->>LLM(Claude): Translate HTML
+        Skill->>LLM(Claude): Parse HTML to JSON
         LLM(Claude)-->>Skill: JSON output
         Skill->>Filesystem: Save to ~/.ezcto/cache/
-        Skill->>EZCTO API: Contribute translation
+        Skill->>EZCTO API: Contribute parsed result
         Skill-->>OpenClaw: Return result (500-2000 tokens)
     end
     OpenClaw-->>User: Display structured summary
@@ -145,7 +148,7 @@ sequenceDiagram
 **Standard OpenClaw skill output:**
 ```json
 {
-  "skill": "ezcto-web-translator-openclaw",
+  "skill": "ezcto-smart-web-reader",
   "status": "success" | "error",
   "result": { /* business data */ },
   "metadata": { /* execution details */ },
@@ -171,9 +174,9 @@ sequenceDiagram
 **Our skill aligns perfectly:**
 ```
 ~/.ezcto/cache/
-├── abc123.json          ← Full translation (JSON)
+├── abc123.json          ← Full result (JSON)
 ├── abc123.meta.md       ← OpenClaw-friendly summary (Markdown)
-└── def456.json          ← Another cached translation
+└── def456.json          ← Another cached result
 ```
 
 **Why dual format?**
@@ -184,12 +187,12 @@ sequenceDiagram
 ```markdown
 ---
 url: https://pump.fun
-translated_at: 2026-02-16T12:34:56Z
+read_at: 2026-02-16T12:34:56Z
 site_type: [crypto]
 token_cost: 1200
 ---
 
-# Translation Summary
+# Page Summary
 
 **Site:** Pump.fun - The fun way to trade memecoins
 **Type:** crypto
@@ -218,7 +221,7 @@ token_cost: 1200
 {
   "workflow": [
     {
-      "skill": "ezcto-web-translator-openclaw",
+      "skill": "ezcto-smart-web-reader",
       "input": "https://pump.fun/coin/abc123",
       "output_var": "page_data"
     },
@@ -285,7 +288,7 @@ heartbeat:
   enabled: true
   interval_minutes: 60
   tasks:
-    - skill: ezcto-web-translator-openclaw
+    - skill: ezcto-smart-web-reader
       check_cache_freshness: true
 ```
 
@@ -314,7 +317,7 @@ permissions:
 
 **First-time prompt:**
 ```
-OpenClaw: The skill 'ezcto-web-translator-openclaw' requests:
+OpenClaw: The skill 'ezcto-smart-web-reader' requests:
           • Network access to api.ezcto.fun and any URL
           • Write access to ~/.ezcto/cache/
           • Execute: curl, sha256sum
@@ -327,7 +330,7 @@ OpenClaw: The skill 'ezcto-web-translator-openclaw' requests:
 # In ~/.openclaw/config.yaml
 security:
   trusted_skills:
-    - ezcto-web-translator-openclaw
+    - ezcto-smart-web-reader
 ```
 
 ---
@@ -349,10 +352,10 @@ security:
 
 **View costs:**
 ```bash
-openclaw stats skills --filter ezcto-web-translator-openclaw
+openclaw stats skills --filter ezcto-smart-web-reader
 
 # Output:
-# ezcto-web-translator-openclaw
+# ezcto-smart-web-reader
 #   Invocations: 45
 #   Total tokens: 12,500 (avg 277 per call)
 #   Cache hit rate: 73%
@@ -374,7 +377,7 @@ openclaw stats skills --filter ezcto-web-translator-openclaw
 **1. Install skill locally:**
 ```bash
 cd ~/.openclaw/skills
-ln -s /path/to/dev/ezcto-web-translator-openclaw .
+ln -s /path/to/dev/ezcto-smart-web-reader .
 ```
 
 **2. Enable debug logging:**
@@ -383,15 +386,15 @@ ln -s /path/to/dev/ezcto-web-translator-openclaw .
 logging:
   level: debug
   skills:
-    ezcto-web-translator-openclaw: trace
+    ezcto-smart-web-reader: trace
 ```
 
 **3. Test execution:**
 ```bash
-openclaw chat --debug "Translate https://ezcto.fun"
+openclaw chat --debug "What's on ezcto.fun?"
 
 # Check logs
-tail -f ~/.openclaw/logs/skills/ezcto-web-translator-openclaw.log
+tail -f ~/.openclaw/logs/skills/ezcto-smart-web-reader.log
 ```
 
 **4. Validate output:**
@@ -433,18 +436,18 @@ if (saas_signals >= 3) {
 
 ### For OpenClaw Users
 
-1. **Enable caching** - Let the skill cache locally for instant repeat access
-2. **Trust the skill** - Add to trusted skills list to avoid permission prompts
-3. **Monitor costs** - Use `openclaw stats` to track token usage
-4. **Chain skills** - Combine with other skills for powerful workflows
+1. **Enable caching** — Let the skill cache locally for instant repeat access
+2. **Trust the skill** — Add to trusted skills list to avoid permission prompts
+3. **Monitor costs** — Use `openclaw stats` to track token usage
+4. **Chain skills** — Combine with other skills for powerful workflows
 
 ### For Skill Developers
 
-1. **Follow OpenClaw conventions** - Use standard output format with metadata
-2. **Provide agent suggestions** - Help OpenClaw decide next steps
-3. **Report detailed errors** - Use error codes and recovery suggestions
-4. **Test permission model** - Ensure skill works with minimal permissions
-5. **Document skill chaining** - Show examples of combining with other skills
+1. **Follow OpenClaw conventions** — Use standard output format with metadata
+2. **Provide agent suggestions** — Help OpenClaw decide next steps
+3. **Report detailed errors** — Use error codes and recovery suggestions
+4. **Test permission model** — Ensure skill works with minimal permissions
+5. **Document skill chaining** — Show examples of combining with other skills
 
 ---
 
@@ -452,16 +455,15 @@ if (saas_signals >= 3) {
 
 ### Issue: Skill not appearing in OpenClaw
 
-**Check:**
 ```bash
 # List all skills
 openclaw skills list
 
 # Check skill directory
-ls -la ~/.openclaw/skills/ezcto-web-translator-openclaw/
+ls -la ~/.openclaw/skills/ezcto-smart-web-reader/
 
 # Validate YAML frontmatter
-head -n 30 ~/.openclaw/skills/ezcto-web-translator-openclaw/SKILL.md
+head -n 30 ~/.openclaw/skills/ezcto-smart-web-reader/SKILL.md
 ```
 
 **Solution:** Ensure YAML frontmatter is valid and `name` field is present.
@@ -470,9 +472,8 @@ head -n 30 ~/.openclaw/skills/ezcto-web-translator-openclaw/SKILL.md
 
 ### Issue: Trigger not matching
 
-**Debug:**
 ```bash
-openclaw chat --debug "Translate https://example.com"
+openclaw chat --debug "What's on example.com?"
 
 # Check logs for trigger matching
 grep "trigger.*ezcto" ~/.openclaw/logs/gateway.log
@@ -484,7 +485,6 @@ grep "trigger.*ezcto" ~/.openclaw/logs/gateway.log
 
 ### Issue: Tool dependency error
 
-**Check:**
 ```bash
 openclaw tools list | grep -E "web_fetch|exec|filesystem"
 ```

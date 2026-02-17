@@ -1,6 +1,18 @@
-# OpenClaw Edition - What's New
+# EZCTO Smart Web Reader — OpenClaw Edition
+## What's New vs Generic Version
 
-This document highlights the key differences between the generic version and the OpenClaw-optimized version.
+This document highlights the key differences and enhancements in the OpenClaw-native edition.
+
+---
+
+## Positioning Change (v1.1.0)
+
+The OpenClaw Edition is repositioned from a **"translation tool"** to an **"Agent web access acceleration layer"**:
+
+- **Generic version:** User explicitly invokes the skill to "translate" a website
+- **OpenClaw Edition:** Skill fires automatically whenever Agent accesses any URL — transparent infrastructure, not a user-invoked command
+
+The agent reads pages faster and cheaper. The user never needs to know this skill exists.
 
 ---
 
@@ -18,25 +30,27 @@ description: Translate any website...
 **OpenClaw version:**
 ```yaml
 ---
-name: ezcto-web-translator-openclaw
-version: 1.0.0
-triggers:                    # NEW: Auto-trigger conditions
-  - user asks to "translate a website"
-requires_tools:              # NEW: Tool dependency declaration
+name: ezcto-smart-web-reader
+version: 1.1.0
+triggers:                    # Auto-fires on any URL access
+  - agent needs to read, access, or fetch a URL
+  - user provides a URL and wants to know what's on it
+  - user shares a URL without explicit instruction
+requires_tools:              # Tool dependency declaration
   - web_fetch
   - exec
   - filesystem
-cost:                        # NEW: Cost estimation
+cost:                        # Cost estimation
   tokens: 0 (cache hit) / 500-2000
   time_seconds: 1-3 / 5-15
-permissions:                 # NEW: Security permissions
+permissions:                 # Security permissions
   network: [api.ezcto.fun, "*"]
   filesystem: [~/.ezcto/cache/]
 ---
 ```
 
-### 2. Structured Workflow with Code Blocks
-**Generic:** Narrative text descriptions  
+### 2. Structured Workflow with Executable Code Blocks
+**Generic:** Narrative text descriptions
 **OpenClaw:** Executable code blocks with error handling
 
 ```markdown
@@ -63,12 +77,12 @@ if (fetch_status !== 0) {
 ```
 
 ### 3. OpenClaw Output Wrapper
-**Generic:** Business data only  
+**Generic:** Business data only
 **OpenClaw:** Wrapped with metadata and agent suggestions
 
 ```json
 {
-  "skill": "ezcto-web-translator-openclaw",
+  "skill": "ezcto-smart-web-reader",
   "status": "success",
   "result": { /* business data */ },
   "metadata": {
@@ -117,7 +131,7 @@ if (fetch_status !== 0) {
 ### 5. Local Markdown Summaries
 **NEW:** OpenClaw-friendly cache format
 
-Alongside `{hash}.json`, create `{hash}.meta.md`:
+Alongside `{hash}.json`, creates `{hash}.meta.md`:
 
 ```markdown
 ---
@@ -126,7 +140,7 @@ site_type: [crypto]
 token_cost: 1200
 ---
 
-# Translation Summary
+# Page Summary
 
 **Site:** Pump.fun - Meme coin trading
 **Type:** crypto
@@ -154,7 +168,7 @@ token_cost: 1200
 ```
 
 ### 7. Enhanced Error Handling
-**Generic:** Simple error messages  
+**Generic:** Simple error messages
 **OpenClaw:** Structured errors with recovery suggestions
 
 ```json
@@ -173,7 +187,7 @@ token_cost: 1200
 ```
 
 ### 8. Improved Site Type Detection
-**Generic:** 5 signals per type  
+**Generic:** 5 signals per type
 **OpenClaw:** 7 signals + context validation
 
 ```javascript
@@ -189,23 +203,16 @@ for (const addr of contractMatches) {
 
 ### 9. Extended Crypto Fields
 **Generic version:**
-- contract_address
-- chain
-- token_symbol
-- tokenomics (basic)
-- dex_links
-- audit
+- contract_address, chain, token_symbol, tokenomics (basic), dex_links, audit
 
 **OpenClaw version (NEW):**
-- whitepaper URL
-- roadmap (structured)
-- presale info
+- whitepaper URL, roadmap (structured), presale info
 - social metrics (follower counts)
 - token_distribution (detailed array)
 - liquidity_locked status
 
 ### 10. Form Field Extraction
-**Generic:** Only form URL  
+**Generic:** Only form URL
 **OpenClaw:** Complete field definitions
 
 ```json
@@ -263,99 +270,52 @@ for (const addr of contractMatches) {
 
 ---
 
-## File Structure Comparison
+## File Structure
 
-### Generic Version
 ```
-ezcto-web-translator/
-├── SKILL.md
-├── README.md
-└── references/
-    ├── translate-prompt.md
-    ├── output-schema.md
-    ├── site-type-detection.md
-    └── extensions/
-        ├── crypto-fields.md
-        ├── ecommerce-fields.md
-        └── restaurant-fields.md
-```
-
-### OpenClaw Version (NEW)
-```
-ezcto-web-translator-openclaw/
+ezcto-smart-web-reader/
 ├── SKILL.md                          ← OpenClaw YAML format
 ├── README.md                         ← OpenClaw-specific
-├── QUICKSTART.md                     ← NEW: 5-min setup guide
-├── CHANGELOG.md                      ← NEW: This file
+├── QUICKSTART.md                     ← 5-min setup guide
+├── CHANGELOG.md                      ← This file
 ├── references/
-│   ├── translate-prompt.md           ← Enhanced
+│   ├── translate-prompt.md           ← LLM parsing prompt
 │   ├── output-schema.md              ← With OpenClaw wrapper
 │   ├── site-type-detection.md        ← 7 signals + validation
-│   ├── openclaw-integration.md       ← NEW: Integration guide
+│   ├── openclaw-integration.md       ← Integration guide
 │   └── extensions/
 │       ├── crypto-fields.md          ← Enhanced (10 fields)
 │       ├── ecommerce-fields.md       ← Enhanced (8 fields)
 │       └── restaurant-fields.md      ← Enhanced (9 fields)
 └── examples/
-    └── openclaw-output-example.json  ← NEW: Complete example
+    └── openclaw-output-example.json  ← Complete example
 ```
 
 ---
 
-## Performance Improvements
+## Performance
 
-| Metric | Generic | OpenClaw |
-|--------|---------|----------|
+| Metric | Generic | OpenClaw Edition |
+|--------|---------|------------------|
 | **Cache hit latency** | ~1s | ~0.5s (local check first) |
 | **Agent understanding** | Manual parsing | Direct JSON + suggestions |
 | **Error recovery** | Manual | Automated with suggestions |
 | **Skill chaining** | Not supported | Native support |
 | **Cost tracking** | External | Built-in metadata |
+| **Trigger mode** | Explicit user command | Automatic URL interception |
 
 ---
 
 ## Backward Compatibility
 
-The OpenClaw version is **fully backward compatible** with the generic version:
-- All original fields are preserved
-- New fields are additive (in `agent_suggestions`, `metadata`, etc.)
+The OpenClaw Edition is **fully backward compatible** with the generic version:
+- All original output fields are preserved
+- New fields are additive (`agent_suggestions`, `metadata`, etc.)
 - Can be used as a drop-in replacement
 
 ---
 
-## Migration Guide
-
-### If you're using the generic version:
-
-1. **Install OpenClaw version alongside:**
-   ```bash
-   cd ~/.openclaw/skills
-   git clone https://github.com/ezcto/web-translator-openclaw
-   ```
-
-2. **Update your code to read the new wrapper:**
-   ```javascript
-   // Old way
-   const data = JSON.parse(result)
-   console.log(data.meta.title)
-
-   // New way (OpenClaw)
-   const response = JSON.parse(result)
-   const data = response.result
-   console.log(data.meta.title)
-   console.log(response.agent_suggestions.primary_action)
-   ```
-
-3. **Leverage new features:**
-   - Use `agent_suggestions` for next steps
-   - Check `metadata.source` to know if cached
-   - Read `.meta.md` files for quick summaries
-
----
-
 ## Future Roadmap
-
-Planned enhancements for future releases:
 
 - [ ] Voice/audio extraction (transcripts)
 - [ ] Table data extraction (structured)
@@ -370,9 +330,9 @@ Planned enhancements for future releases:
 
 ## Credits
 
-OpenClaw Edition developed by EZCTO Team specifically for the OpenClaw community.
+OpenClaw Edition developed by EZCTO Team for the OpenClaw community.
 
 Special thanks to:
 - OpenClaw maintainers for the amazing framework
 - EZCTO community for feedback and testing
-- Claude (Anthropic) for powering translations
+- Claude (Anthropic) for powering HTML parsing

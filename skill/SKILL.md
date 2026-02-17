@@ -1,17 +1,20 @@
 ---
-name: ezcto-web-translator-openclaw
-version: 1.0.0
-description: Translate any website into structured JSON for OpenClaw agents (80%+ token savings vs screenshots)
+name: ezcto-smart-web-reader
+version: 1.1.0
+description: Agent web access acceleration layer — reads any URL as structured JSON. Cache-first (public library hit = 0 tokens). The smart alternative to raw web_fetch.
 author: pearl799
 license: MIT
 
-# Trigger conditions - when should OpenClaw use this skill?
+# Trigger conditions — fires whenever Agent needs to access any URL
 triggers:
-  - user asks to "translate a website" or "understand this webpage"
-  - user provides a URL and wants structured content
-  - user says "extract page info" or "scrape this site"
-  - user mentions "website to JSON" or "get page data"
-  - user asks "what's on this page?" with a URL
+  - agent needs to read, access, or fetch a URL
+  - user provides a URL and wants to know what's on it
+  - user asks about content on a website ("what's on X", "check this site")
+  - user asks agent to research, analyze, or summarize a webpage
+  - user asks "what does this website do" or "what's this page about"
+  - user shares a URL without explicit instruction
+  - agent is about to use web_fetch to retrieve page content
+  - user asks to "look at", "check", "read", or "understand" a URL
 
 # Required OpenClaw tools
 requires_tools:
@@ -30,9 +33,9 @@ outputs:
 
 # Cost estimation (helps OpenClaw prioritize)
 cost:
-  tokens: 0 (cache hit) / 500-2000 (cache miss + translation)
-  time_seconds: 1-3 (cache hit) / 5-15 (full translation)
-  api_calls: 1 (EZCTO cache check) + 0-1 (LLM translation)
+  tokens: 0 (cache hit) / 500-2000 (cache miss + parsing)
+  time_seconds: 1-3 (cache hit) / 5-15 (full parse)
+  api_calls: 1 (EZCTO cache check) + 0-1 (LLM parsing)
   network: true
 
 # Security permissions
@@ -48,18 +51,19 @@ permissions:
     - sha256sum      # Compute content hash
 ---
 
-# EZCTO Web Translator for OpenClaw
+# EZCTO Smart Web Reader for OpenClaw
 
 ## What it does
 
-Converts website HTML into structured JSON containing page identity, content sections, image descriptions (text-inferred), video metadata, and actionable links. Enables OpenClaw agents to understand web pages without multimodal processing — **80%+ token savings**.
+Reads any URL and returns structured JSON containing page identity, content sections, image descriptions (text-inferred), video metadata, and actionable links. Acts as the Agent's default web access layer — replacing raw `web_fetch` with zero-token cache hits and intelligent HTML parsing. **80%+ token savings vs screenshots**.
 
 ## Key Features
 
-✓ **Cache-first strategy** - Check EZCTO asset library before translating (zero cost)
+✓ **Transparent URL interception** - Fires automatically whenever Agent accesses any URL
+✓ **Cache-first strategy** - Check EZCTO asset library before parsing (zero cost)
 ✓ **Zero-token site detection** - Auto-detect crypto/ecommerce/restaurant sites via text matching
 ✓ **Local-first storage** - Aligns with OpenClaw's philosophy (~/.ezcto/cache/)
-✓ **Community-driven** - Contribute translations back to shared asset library
+✓ **Community-driven** - Contribute parsed results back to shared asset library
 ✓ **OpenClaw-native output** - Includes agent suggestions and skill chaining hints
 
 ---
@@ -94,7 +98,7 @@ fetch_status=$?
 ```javascript
 if (fetch_status !== 0) {
   return {
-    "skill": "ezcto-web-translator-openclaw",
+    "skill": "ezcto-smart-web-reader",
     "status": "error",
     "error": {
       "code": "fetch_failed",
@@ -199,13 +203,13 @@ prompt += readFile("/tmp/page.html")
 
 ---
 
-### Step 6: Translate with Local LLM
+### Step 6: Parse HTML with Local LLM
 
 ```javascript
 const result = await llm.complete({
   model: "claude-sonnet-4.5",  // Or user's configured model
   system: prompt,
-  user: "Translate the above HTML to JSON following the output schema exactly. Ensure all required fields are present.",
+  user: "Parse the above HTML into structured JSON following the output schema exactly. Ensure all required fields are present.",
   max_tokens: 4096,
   temperature: 0.1,  // Low temperature for consistent formatting
   stop_sequences: []
@@ -298,7 +302,7 @@ site_type: ${site_types}
 token_cost: ${result.usage.total_tokens}
 ---
 
-# Translation Summary
+# Page Summary
 
 **Site:** ${json.meta.title}
 **Type:** ${site_types.join(", ")}
@@ -345,11 +349,11 @@ fi
 
 ```json
 {
-  "skill": "ezcto-web-translator-openclaw",
-  "version": "1.0.0",
+  "skill": "ezcto-smart-web-reader",
+  "version": "1.1.0",
   "status": "success",
   "result": {
-    // Full translation JSON (per references/output-schema.md)
+    // Full page data JSON (per references/output-schema.md)
   },
   "metadata": {
     "source": "cache" | "fresh_translation",
@@ -397,7 +401,7 @@ fi
 **For cache hits (Step 1 direct return):**
 ```json
 {
-  "skill": "ezcto-web-translator-openclaw",
+  "skill": "ezcto-smart-web-reader",
   "status": "success",
   "result": { /* cached translation */ },
   "metadata": {
@@ -445,17 +449,17 @@ fi
 
 **Test with a crypto site:**
 ```bash
-/use ezcto-web-translator-openclaw https://pump.fun
+/use ezcto-smart-web-reader https://pump.fun
 ```
 
 **Test with e-commerce:**
 ```bash
-/use ezcto-web-translator-openclaw https://www.amazon.com/dp/B08N5WRWNW
+/use ezcto-smart-web-reader https://www.amazon.com/dp/B08N5WRWNW
 ```
 
 **Test cache hit:**
 ```bash
-/use ezcto-web-translator-openclaw https://ezcto.fun
+/use ezcto-smart-web-reader https://ezcto.fun
 # Run again immediately - should return cached result in <2 seconds
 ```
 
@@ -466,4 +470,4 @@ fi
 - **EZCTO Website:** https://ezcto.fun
 - **API Documentation:** https://ezcto.fun/api-docs
 - **OpenClaw Integration:** See `references/openclaw-integration.md`
-- **Report Issues:** https://github.com/ezcto/web-translator/issues
+- **Report Issues:** https://github.com/pearl799/ezcto-web-translator/issues

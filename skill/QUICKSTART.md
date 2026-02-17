@@ -1,6 +1,6 @@
-# Quick Start Guide - OpenClaw Edition
+# Quick Start Guide — EZCTO Smart Web Reader
 
-Get started with EZCTO Web Translator for OpenClaw in 5 minutes.
+Get started in 5 minutes. After installing, OpenClaw automatically reads any URL you mention — no special commands needed.
 
 ---
 
@@ -9,18 +9,18 @@ Get started with EZCTO Web Translator for OpenClaw in 5 minutes.
 ### Option 1: Clone into OpenClaw skills directory
 ```bash
 cd ~/.openclaw/skills
-git clone https://github.com/ezcto/web-translator-openclaw ezcto-web-translator-openclaw
+git clone https://github.com/pearl799/ezcto-web-translator ezcto-smart-web-reader
 ```
 
 ### Option 2: Copy manually
 ```bash
-cp -r ezcto-web-translator-openclaw ~/.openclaw/skills/
+cp -r ezcto-smart-web-reader ~/.openclaw/skills/
 ```
 
 ### Verify installation
 ```bash
-openclaw skills list | grep ezcto-web-translator
-# Should show: ✓ ezcto-web-translator-openclaw (enabled)
+openclaw skills list | grep ezcto-smart-web-reader
+# Should show: ✓ ezcto-smart-web-reader (enabled)
 ```
 
 ---
@@ -56,26 +56,26 @@ openclaw
 
 Try these examples:
 
-### Test 1: Simple translation (cache hit)
+### Test 1: Instant read (cache hit)
 ```
-You: Translate https://ezcto.fun
+You: What's on ezcto.fun?
 
-OpenClaw: ✓ Translated ezcto.fun
+OpenClaw: ✓ Read ezcto.fun
           Source: cache (0 tokens, 1.2s)
           Site type: general
-          Title: EZCTO - Web Translator for AI Agents
-          Primary action: Try Translator
+          Title: EZCTO - Smart Web Access for AI Agents
+          Primary action: Try it now
 
           Cached at: ~/.ezcto/cache/abc123.json
           View summary: cat ~/.ezcto/cache/abc123.meta.md
 ```
 
-### Test 2: Crypto site (fresh translation)
+### Test 2: Crypto site (fresh parse)
 ```
-You: What's on https://pump.fun?
+You: What's on pump.fun?
 
-OpenClaw: ✓ Translated pump.fun
-          Source: fresh translation (1,234 tokens, 5.4s)
+OpenClaw: ✓ Read pump.fun
+          Source: fresh parse (1,234 tokens, 5.4s)
           Site type: crypto
 
           Key findings:
@@ -95,9 +95,9 @@ OpenClaw: ✓ Translated pump.fun
 
 ### Test 3: E-commerce site
 ```
-You: Translate https://www.shopify.com
+You: What does shopify.com offer?
 
-OpenClaw: ✓ Translated shopify.com
+OpenClaw: ✓ Read shopify.com
           Site type: ecommerce
 
           Products found: 8
@@ -111,11 +111,11 @@ OpenClaw: ✓ Translated shopify.com
 
 ## Verify Cache
 
-Check what's been cached:
+Check what's been cached locally:
 ```bash
 ls -lh ~/.ezcto/cache/
 
-# View a translation (JSON)
+# View a parsed result (JSON)
 cat ~/.ezcto/cache/*.json | jq '.meta.title'
 
 # View markdown summary
@@ -133,7 +133,7 @@ You: Research this crypto token: https://pump.fun/coin/abc123
 
 OpenClaw: Executing research workflow...
 
-          Step 1/4: Translating website ✓
+          Step 1/4: Reading website ✓
           Step 2/4: Checking blockchain data ✓
           Step 3/4: Analyzing sentiment ✓
           Step 4/4: Generating report ✓
@@ -164,36 +164,31 @@ export EZCTO_API_URL=https://my-proxy.example.com
 
 ## Troubleshooting
 
-### Issue: Skill not found
+### Skill not found
 ```bash
-# Check skill is in the right place
-ls ~/.openclaw/skills/ezcto-web-translator-openclaw/SKILL.md
-
-# Restart OpenClaw
+ls ~/.openclaw/skills/ezcto-smart-web-reader/SKILL.md
 openclaw restart
 ```
 
-### Issue: "exec tool not enabled"
+### "exec tool not enabled"
 ```bash
-# Edit config
 nano ~/.openclaw/config.yaml
-
 # Set: exec: enabled
 # Save and restart OpenClaw
 ```
 
-### Issue: Cache directory error
+### Cache directory error
 ```bash
 mkdir -p ~/.ezcto/cache
 chmod 755 ~/.ezcto/cache
 ```
 
-### Issue: Translation fails
+### Page parsing fails
 ```bash
 # Check logs
-tail -f ~/.openclaw/logs/skills/ezcto-web-translator-openclaw.log
+tail -f ~/.openclaw/logs/skills/ezcto-smart-web-reader.log
 
-# Test URL manually
+# Test URL directly
 curl -s "https://api.ezcto.fun/v1/translate?url=YOUR_URL"
 ```
 
@@ -201,7 +196,7 @@ curl -s "https://api.ezcto.fun/v1/translate?url=YOUR_URL"
 
 ## Next Steps
 
-- **Read full docs:** `less SKILL.md`
+- **Read full workflow:** `less SKILL.md`
 - **Explore examples:** `ls examples/`
 - **Customize detection:** Edit `references/site-type-detection.md`
 - **Add new site types:** Create `references/extensions/yourtype-fields.md`
@@ -213,12 +208,12 @@ curl -s "https://api.ezcto.fun/v1/translate?url=YOUR_URL"
 
 View your usage:
 ```bash
-openclaw stats skills --filter ezcto-web-translator-openclaw
+openclaw stats skills --filter ezcto-smart-web-reader
 ```
 
 Expected output:
 ```
-ezcto-web-translator-openclaw
+ezcto-smart-web-reader
   Invocations: 45
   Cache hits: 33 (73%)
   Total tokens: 12,500 (avg 277 per call)
@@ -230,7 +225,7 @@ ezcto-web-translator-openclaw
 
 ## Support
 
-- **GitHub Issues:** https://github.com/ezcto/web-translator-openclaw/issues
+- **GitHub Issues:** https://github.com/pearl799/ezcto-web-translator/issues
 - **Discord:** https://discord.gg/ezcto
 - **Email:** support@ezcto.fun
 - **Docs:** https://ezcto.fun/docs
