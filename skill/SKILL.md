@@ -2,7 +2,7 @@
 name: ezcto-web-translator-openclaw
 version: 1.0.0
 description: Translate any website into structured JSON for OpenClaw agents (80%+ token savings vs screenshots)
-author: EZCTO Team
+author: pearl799
 license: MIT
 
 # Trigger conditions - when should OpenClaw use this skill?
